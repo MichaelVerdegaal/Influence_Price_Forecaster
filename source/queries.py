@@ -1,4 +1,6 @@
+import pandas as pd
 import requests
+from sklearn.preprocessing import LabelEncoder
 
 
 def multi_asset_retrieval(slug: str, limit: int = None, offset: int = None):
@@ -48,3 +50,75 @@ def retrieve_all_assets(slug: str, item_count: int):
             item_list.append(item)
         iteration_counter += 1
     return item_list
+
+
+def unpack_traits(traits: list):
+    """
+    Unpacks NFT traits into a processable formate
+    :param traits: list of traits
+    :return: processed traits
+    """
+    unpacked_traits = {}
+    for trait in traits:
+        trait_name = f"{trait['trait_type'].replace(' ', '_').lower()}"
+        unpacked_traits[f'{trait_name}_traitvalue'] = str(trait['value']).lower()
+        unpacked_traits[f'{trait_name}_traitcount'] = trait['trait_count']
+    return unpacked_traits
+
+
+def unpack_sale(sale_object: dict, num_sales: int):
+    """
+    Unpacks sale object for the relevant information
+    :param sale_object: dict with sale information
+    :param num_sales: number of sales of the relevant item
+    :return: dict with processed information
+    """
+    date = sale_object['event_timestamp']  # TODO: this is harder to convert to a feature, so we'll leave it for now
+    return {'num_sales': num_sales, 'price': sale_object['payment_token']['eth_price']}
+
+
+def clean_dataframe(df: pd.DataFrame):
+    """
+    Processes the values in the dataframe so it can be entered into a neural network
+    :param df: Dataframe to clean
+    :return: Cleaned dataframe
+    """
+    enc = LabelEncoder()
+    # One-hot encode all categorical traits
+    for i, col in enumerate(df.filter(like='traitvalue').columns):
+        df[col].fillna('none', inplace=True)
+        one_hot = pd.get_dummies(df[col])
+        df = df.drop(col, axis=1)
+        df = df.join(one_hot, rsuffix=f'{col}_')
+
+    # Label encode all numerical traits
+    for col in df.filter(like='traitcount').columns:
+        total_nan = int(df[col].isna().sum())
+        df[col].fillna(total_nan, inplace=True)
+        df[col] = enc.fit_transform(df[col])
+    return df
+
+
+def build_dataset(item_collection: list):
+    """
+    Builds the final dataset of the collected assets
+    :param item_collection: list of NFT's
+    :return: dataframe
+    """
+    dataset = []
+    for item in item_collection:
+        num_sales = item['num_sales']
+        # Only if the item has any sales we'll continue
+        if num_sales > 0:
+            last_sale = item['last_sale']
+            if last_sale:
+                token_id = item['token_id']
+                traits = item['traits']
+                item = {'token_id': token_id,
+                        'sales': unpack_sale(last_sale, num_sales),
+                        'traits': unpack_traits(traits)}
+                dataset.append(item)
+
+    df = pd.json_normalize(dataset)
+    df = clean_dataframe(df)
+    return df
