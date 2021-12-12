@@ -74,7 +74,9 @@ def unpack_sale(sale_object: dict, num_sales: int):
     :return: dict with processed information
     """
     date = sale_object['event_timestamp']  # TODO: this is harder to convert to a feature, so we'll leave it for now
-    return {'num_sales': num_sales, 'price': sale_object['payment_token']['eth_price']}
+    wei = float(sale_object['total_price'])
+    ether = wei / (10 ** 18)
+    return {'num_sales': num_sales, 'price': ether}
 
 
 def clean_dataframe(df: pd.DataFrame):
