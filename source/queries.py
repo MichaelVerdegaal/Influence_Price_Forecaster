@@ -1,5 +1,7 @@
+import matplotlib.pyplot as plt
 import pandas as pd
 import requests
+from pandas.api.types import is_string_dtype
 from sklearn.preprocessing import LabelEncoder
 
 
@@ -61,7 +63,11 @@ def unpack_traits(traits: list):
     unpacked_traits = {}
     for trait in traits:
         trait_name = f"{trait['trait_type'].replace(' ', '_').lower()}"
-        unpacked_traits[f'{trait_name}_traitvalue'] = str(trait['value']).lower()
+        trait_value = trait['value']
+        if isinstance(trait_value, str):
+            unpacked_traits[f'{trait_name}_traitvalue'] = str(trait_value).lower()
+        else:
+            unpacked_traits[f'{trait_name}_traitvalue'] = trait_value
         unpacked_traits[f'{trait_name}_traitcount'] = trait['trait_count']
     return unpacked_traits
 
@@ -88,10 +94,11 @@ def clean_dataframe(df: pd.DataFrame):
     enc = LabelEncoder()
     # One-hot encode all categorical traits
     for col in df.filter(like='traitvalue').columns:
-        df[col].fillna('none', inplace=True)
-        one_hot = pd.get_dummies(df[col])
-        df = df.drop(col, axis=1)
-        df = df.join(one_hot, rsuffix=f'{col}_')
+        if is_string_dtype(df[col]):
+            df[col].fillna('none', inplace=True)
+            one_hot = pd.get_dummies(df[col])
+            df = df.drop(col, axis=1)
+            df = df.join(one_hot, rsuffix=f'{col}_')
 
     # Label encode all numerical traits
     for col in df.filter(like='traitcount').columns:
@@ -114,7 +121,7 @@ def build_dataset(item_collection: list):
         if num_sales > 0:
             last_sale = item['last_sale']
             if last_sale:
-                token_id = item['token_id']
+                token_id = int(item['token_id'])
                 traits = item['traits']
                 item = {'token_id': token_id,
                         'sales': unpack_sale(last_sale, num_sales),
@@ -124,3 +131,28 @@ def build_dataset(item_collection: list):
     df = pd.json_normalize(dataset)
     df = clean_dataframe(df)
     return df
+
+
+def plot_fit_curves(fit_history, train_metric='loss', val_metric='val_loss', remove_first=True):
+    """
+    Plots the history of training a model into a line graph
+    :param fit_history: history object from model.fit()
+    :param train_metric: what to use for the training metrics (only use if you have custom metrics)
+    :param val_metric: what to use for the validation metrics (only use if you have custom metrics)
+    :param remove_first: whether to remove the first epoch from the history. This can be useful if your first epoch
+    has a extremely high score, which messes with the visuals of the plot
+    """
+    if remove_first:
+        train_hist = fit_history.history[train_metric][1:]
+        val_hist = fit_history.history[val_metric][1:]
+    else:
+        train_hist = fit_history.history[train_metric]
+        val_hist = fit_history.history[val_metric]
+    plt.plot(train_hist)
+    plt.plot(val_hist)
+    plt.title('Training curve')
+    plt.ylabel(train_metric)
+    plt.xlabel('epochs')
+    plt.legend(['train', 'val'], loc='upper left')
+    plt.yscale('log')
+    plt.show()
