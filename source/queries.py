@@ -87,7 +87,7 @@ def clean_dataframe(df: pd.DataFrame):
     """
     enc = LabelEncoder()
     # One-hot encode all categorical traits
-    for i, col in enumerate(df.filter(like='traitvalue').columns):
+    for col in df.filter(like='traitvalue').columns:
         df[col].fillna('none', inplace=True)
         one_hot = pd.get_dummies(df[col])
         df = df.drop(col, axis=1)
