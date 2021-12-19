@@ -1,4 +1,5 @@
-from source.queries import retrieve_crew_amount, retrieve_all_assets, build_dataset
+from source.queries import retrieve_crew_amount, retrieve_all_assets
+from source.dataset_building import build_dataset
 from config import pickle_obj
 
 # Config
