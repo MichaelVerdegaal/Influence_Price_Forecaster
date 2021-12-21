@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pandas as pd
 from pandas.core.dtypes.common import is_string_dtype
 
@@ -30,10 +32,12 @@ def unpack_sale(sale_object: dict, num_sales: int):
     :param num_sales: number of sales of the relevant item
     :return: dict with processed information
     """
-    # date = sale_object['event_timestamp']  # TODO: this is harder to convert to a feature, so we'll leave it for now
+    timestamp = sale_object['transaction']['timestamp']
+    timestamp = datetime.fromisoformat(timestamp)
+    year, month, day = timestamp.year, timestamp.month, timestamp.day
     wei = float(sale_object['total_price'])
     ether = wei / (10 ** 18)
-    return {'num_sales': num_sales, 'price': ether}
+    return {'num_sales': num_sales, 'price': ether, 'date_year': year, 'date_month': month, 'date_day': day}
 
 
 def clean_dataframe(df: pd.DataFrame):
@@ -56,6 +60,7 @@ def build_dataset(item_collection: list, traits_to_keep: list):
     """
     Builds the final dataset of the collected assets
     :param item_collection: list of NFT's
+    :param traits_to_keep: if specified, only add the traits with these names
     :return: dataframe
     """
     dataset = []

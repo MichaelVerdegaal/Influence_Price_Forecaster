@@ -16,5 +16,7 @@ item_list = retrieve_all_assets(collection_slug, item_count)
 
 # Build up dataset
 dataset = build_dataset(item_list, traits_to_keep)
+dtypes = dataset.dtypes
 pickle_obj(dataset, f"dataset_{collection_slug}_{len(dataset)}")
+pickle_obj(dtypes, f"dataset_{collection_slug}_dtypes")
 print()
