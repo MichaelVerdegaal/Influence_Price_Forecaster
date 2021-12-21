@@ -68,6 +68,7 @@ def build_dataset(item_collection: list, traits_to_keep: list):
                 token_id = int(item['token_id'])
                 print(f'Processing item {token_id}')
                 contract_address = item['asset_contract']['address']
+                # This is another OS request, and one that requires an API key. If you don't have one use last_sale
                 events = retrieve_events(contract_address, token_id)
                 for event in events['asset_events']:
                     if event['event_type'] == 'successful':
