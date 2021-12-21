@@ -1,24 +1,25 @@
 import pandas as pd
 from pandas.core.dtypes.common import is_string_dtype
-from sklearn.preprocessing import LabelEncoder
+
 from queries import retrieve_events
 
 
-def unpack_traits(traits: list):
+def unpack_traits(traits: list, to_keep: list = None):
     """
     Unpacks NFT traits into a processable formate
     :param traits: list of traits
+    :param to_keep: if specified, only add the traits with these names
     :return: processed traits
     """
     unpacked_traits = {}
     for trait in traits:
-        trait_name = f"{trait['trait_type'].replace(' ', '_').lower()}"
-        trait_value = trait['value']
-        if isinstance(trait_value, str):
-            unpacked_traits[f'{trait_name}_traitvalue'] = str(trait_value).lower()
-        else:
-            unpacked_traits[f'{trait_name}_traitvalue'] = trait_value
-        unpacked_traits[f'{trait_name}_traitcount'] = trait['trait_count']
+        if (trait['trait_type'] in to_keep) or (not to_keep):
+            trait_name = f"{trait['trait_type'].replace(' ', '_').lower()}"
+            trait_value = trait['value']
+            if isinstance(trait_value, str):
+                unpacked_traits[f'{trait_name}_traitvalue'] = str(trait_value).lower()
+            else:
+                unpacked_traits[f'{trait_name}_traitvalue'] = trait_value
     return unpacked_traits
 
 
@@ -41,7 +42,6 @@ def clean_dataframe(df: pd.DataFrame):
     :param df: Dataframe to clean
     :return: Cleaned dataframe
     """
-    enc = LabelEncoder()
     # One-hot encode all categorical traits
     for col in df.filter(like='traitvalue').columns:
         if is_string_dtype(df[col]):
@@ -49,16 +49,10 @@ def clean_dataframe(df: pd.DataFrame):
             one_hot = pd.get_dummies(df[col])
             df = df.drop(col, axis=1)
             df = df.join(one_hot, rsuffix=f'{col}_')
-
-    # Label encode all numerical traits
-    for col in df.filter(like='traitcount').columns:
-        total_nan = int(df[col].isna().sum())
-        df[col].fillna(total_nan, inplace=True)
-        df[col] = enc.fit_transform(df[col])
     return df
 
 
-def build_dataset(item_collection: list):
+def build_dataset(item_collection: list, traits_to_keep: list):
     """
     Builds the final dataset of the collected assets
     :param item_collection: list of NFT's
@@ -81,7 +75,7 @@ def build_dataset(item_collection: list):
                         if isinstance(traits, list):
                             asset = {'token_id': token_id,
                                      'sales': unpack_sale(event, num_sales),
-                                     'traits': unpack_traits(traits)}
+                                     'traits': unpack_traits(traits, traits_to_keep)}
                             dataset.append(asset)
 
     df = pd.json_normalize(dataset)
