@@ -66,7 +66,7 @@ def build_dataset(item_collection: list, traits_to_keep: list):
             last_sale = item['last_sale']
             if last_sale:
                 token_id = int(item['token_id'])
-                print(f'{token_id=}')
+                print(f'Processing item {token_id}')
                 contract_address = item['asset_contract']['address']
                 events = retrieve_events(contract_address, token_id)
                 for event in events['asset_events']:

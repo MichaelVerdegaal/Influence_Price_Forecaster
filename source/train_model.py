@@ -5,10 +5,10 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
 
 from config import unpickle_obj
-from queries import plot_fit_curves
+from source.evaluation import plot_fit_curves
 
 # Split dataset
-df = unpickle_obj('dataset_influence-crew_7126')
+df = unpickle_obj('dataset_influence-crew_7275')
 labels = df['sales.price']
 X_train, X_test, y_train, y_test = train_test_split(df, labels, random_state=5, train_size=0.8)
 

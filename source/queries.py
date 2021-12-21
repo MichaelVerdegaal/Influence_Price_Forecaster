@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import requests
 import os
 
@@ -45,6 +44,12 @@ def retrieve_crew_amount(slug: str):
 
 
 def retrieve_events(contract_adress: str, token_id: int):
+    """
+    Retries OpenSea evednts of a specified asset
+    :param contract_adress: ethereum address that the asset belongs to
+    :param token_id: id of asset to retrieve
+    :return: asset events
+    """
     stat_collection_request_url = f'https://api.opensea.io/api/v1/events?token_id={token_id}&' \
                                   f'asset_contract_address={contract_adress}'
     response = make_request(stat_collection_request_url)
@@ -70,26 +75,3 @@ def retrieve_all_assets(slug: str, item_count: int):
     return item_list
 
 
-def plot_fit_curves(fit_history, train_metric='loss', val_metric='val_loss', remove_first=True):
-    """
-    Plots the history of training a model into a line graph
-    :param fit_history: history object from model.fit()
-    :param train_metric: what to use for the training metrics (only use if you have custom metrics)
-    :param val_metric: what to use for the validation metrics (only use if you have custom metrics)
-    :param remove_first: whether to remove the first epoch from the history. This can be useful if your first epoch
-    has a extremely high score, which messes with the visuals of the plot
-    """
-    if remove_first:
-        train_hist = fit_history.history[train_metric][1:]
-        val_hist = fit_history.history[val_metric][1:]
-    else:
-        train_hist = fit_history.history[train_metric]
-        val_hist = fit_history.history[val_metric]
-    plt.plot(train_hist)
-    plt.plot(val_hist)
-    plt.title('Training curve')
-    plt.ylabel(train_metric)
-    plt.xlabel('epochs')
-    plt.legend(['train', 'val'], loc='upper left')
-    plt.yscale('log')
-    plt.show()
