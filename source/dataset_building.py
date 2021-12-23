@@ -79,8 +79,7 @@ def build_dataset(item_collection: list, traits_to_keep: list):
                     if event['event_type'] == 'successful':
                         traits = item['traits']
                         if isinstance(traits, list):
-                            asset = {'token_id': token_id,
-                                     'sales': unpack_sale(event, num_sales),
+                            asset = {'sales': unpack_sale(event, num_sales),
                                      'traits': unpack_traits(traits, traits_to_keep)}
                             dataset.append(asset)
 
