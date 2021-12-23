@@ -10,15 +10,16 @@ from config import unpickle_obj
 from source.evaluation import plot_fit_curves
 
 # Split dataset
-df = unpickle_obj('dataset_influence-crew_1718')
+df = unpickle_obj('dataset_influence-crew_1728_augmented')
 dtypes = unpickle_obj('dataset_influence-crew_dtypes')
-labels = df['sales.price']
+labels = df.pop('sales.price')
+
 X_train, X_test, y_train, y_test = train_test_split(df, labels, random_state=5, train_size=0.8)
 
 # Compile model
 model = Sequential()
-model.add(Dense(500, activation='relu'))  # Input layer
-model.add(Dense(1))  # Output layer
+model.add(Dense(500, activation='relu'))
+model.add(Dense(1))
 
 model.compile(loss=mean_squared_error, optimizer=Adam(0.00001), metrics=[tfa.metrics.RSquare(dtype=tensorflow.float32,
                                                                                              y_shape=(1,))])
@@ -26,7 +27,7 @@ model.compile(loss=mean_squared_error, optimizer=Adam(0.00001), metrics=[tfa.met
 # Train model
 hist = model.fit(X_train, y_train,
                  batch_size=4,
-                 validation_split=0.1,
+                 validation_split=0.2,
                  epochs=250)
 
 # Evaluate model

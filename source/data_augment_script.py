@@ -2,7 +2,7 @@ from config import unpickle_obj, pickle_obj
 import random
 
 # Load dataset
-dataset_name = 'dataset_influence-crew_1728_augmented'
+dataset_name = 'dataset_influence-crew_1728'
 df = unpickle_obj(dataset_name)
 
 
