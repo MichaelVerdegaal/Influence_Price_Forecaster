@@ -1,12 +1,11 @@
-import tensorflow
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.losses import mean_squared_error
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
-import tensorflow_addons as tfa
+from sklearn.metrics import r2_score
 
-from config import unpickle_obj
+from config import unpickle_obj, save_model
 from source.evaluation import plot_fit_curves
 
 # Split dataset
@@ -21,17 +20,20 @@ model = Sequential()
 model.add(Dense(500, activation='relu'))
 model.add(Dense(1))
 
-model.compile(loss=mean_squared_error, optimizer=Adam(0.00001), metrics=[tfa.metrics.RSquare(dtype=tensorflow.float32,
-                                                                                             y_shape=(1,))])
+model.compile(loss=mean_squared_error, optimizer=Adam(0.00001))
 
 # Train model
 hist = model.fit(X_train, y_train,
                  batch_size=4,
                  validation_split=0.2,
-                 epochs=250)
+                 epochs=500)
 
 # Evaluate model
 plot_fit_curves(hist)
-plot_fit_curves(hist, train_metric='r_square', val_metric='val_r_square')
 test_results = model.evaluate(X_test, y_test)
-print("Test loss, test R2:", test_results)
+print("Test loss", test_results)
+y_pred = model.predict(X_test)
+print("R2 score", r2_score(y_test, y_pred))
+
+# Store model
+save_model(model, f"model_influence_crew_{len(df)}")

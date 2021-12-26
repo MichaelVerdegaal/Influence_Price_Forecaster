@@ -116,3 +116,4 @@ dmypy.json
 # Jetbrains
 .idea
 *.pkl
+*.h5
