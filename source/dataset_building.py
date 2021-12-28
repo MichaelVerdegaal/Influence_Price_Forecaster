@@ -1,9 +1,10 @@
 from datetime import datetime
 
+import numpy as np
 import pandas as pd
 from pandas.core.dtypes.common import is_string_dtype
 
-from queries import retrieve_events
+from queries import retrieve_events, make_request
 
 
 def unpack_traits(traits: list, to_keep: list = None):
@@ -13,6 +14,9 @@ def unpack_traits(traits: list, to_keep: list = None):
     :param to_keep: if specified, only add the traits with these names
     :return: processed traits
     """
+    if not to_keep:
+        to_keep = []
+
     unpacked_traits = {}
     for trait in traits:
         if (trait['trait_type'] in to_keep) or (not to_keep):
@@ -86,3 +90,38 @@ def build_dataset(item_collection: list, traits_to_keep: list):
     df = pd.json_normalize(dataset)
     df = clean_dataframe(df)
     return df
+
+
+def get_and_clean_single_asset(token_id, dtypes, contract_address='0x746db7b1728af413c4e2b98216c6171b2fc9d00e',
+                               to_keep=None, year=None, month=None, day=None):
+    # Retrieve asset data
+    url = f"https://api.opensea.io/api/v1/asset/{contract_address}/{token_id}"
+    asset = make_request(url)
+    traits = unpack_traits(asset['traits'], to_keep=to_keep)
+
+    # Build new list with specified columns
+    dtypes = dtypes.drop(labels=['sales.price'])
+    new_list = pd.Series(np.zeros(len(dtypes)), index=dtypes.index)
+
+    # Set traits
+    for trait_val in traits.values():
+        if trait_val in new_list.index:
+            new_list[trait_val] = 1.0
+
+    # Set date
+    today = datetime.today()
+    if not year:
+        new_list['sales.date_year'] = today.year
+    else:
+        new_list['sales.date_year'] = year
+    if not month:
+        new_list['sales.date_month'] = today.month
+    else:
+        new_list['sales.date_month'] = month
+    if not day:
+        new_list['sales.date_day'] = today.day
+    else:
+        new_list['sales.date_day'] = day
+
+    new_list = new_list.to_numpy()
+    return new_list.reshape((1, len(new_list)))

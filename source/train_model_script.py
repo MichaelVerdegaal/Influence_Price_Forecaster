@@ -1,5 +1,5 @@
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dense, Reshape
 from tensorflow.keras.losses import mean_squared_error
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
@@ -14,6 +14,7 @@ dtypes = unpickle_obj('dataset_influence-crew_dtypes')
 labels = df.pop('sales.price')
 
 X_train, X_test, y_train, y_test = train_test_split(df, labels, random_state=5, train_size=0.8)
+shape = X_train.head(1).shape
 
 # Compile model
 model = Sequential()
@@ -32,7 +33,7 @@ hist = model.fit(X_train, y_train,
 plot_fit_curves(hist)
 test_results = model.evaluate(X_test, y_test)
 print("Test loss", test_results)
-y_pred = model.predict(X_test)
+y_pred = model.predict(X_test).flatten()
 print("R2 score", r2_score(y_test, y_pred))
 
 # Store model
