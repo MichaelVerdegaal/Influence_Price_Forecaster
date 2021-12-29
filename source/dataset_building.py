@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from pandas.core.dtypes.common import is_string_dtype
 
-from queries import retrieve_events, make_request
+from queries import retrieve_events, get_single_asset
 
 
 def unpack_traits(traits: list, to_keep: list = None):
@@ -94,9 +94,18 @@ def build_dataset(item_collection: list, traits_to_keep: list):
 
 def get_and_clean_single_asset(token_id, dtypes, contract_address='0x746db7b1728af413c4e2b98216c6171b2fc9d00e',
                                to_keep=None, year=None, month=None, day=None):
-    # Retrieve asset data
-    url = f"https://api.opensea.io/api/v1/asset/{contract_address}/{token_id}"
-    asset = make_request(url)
+    """
+    Retrieves an asset and cleans it for model prediction use
+    :param token_id: id of asset to retrieve
+    :param dtypes: list of datatypes to expect. This can be generated when building a dataset
+    :param contract_address: ethereum address that the asset belongs to
+    :param to_keep: traits to keep
+    :param year: custom year number, otherwise set to today
+    :param month: custom month number, otherwise set to today
+    :param day: custom day number, otherwise set to today
+    :return: prediction ready item in (1, len(dtypes) dimensional array
+    """
+    asset = get_single_asset(token_id, contract_address)
     traits = unpack_traits(asset['traits'], to_keep=to_keep)
 
     # Build new list with specified columns

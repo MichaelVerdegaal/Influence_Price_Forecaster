@@ -43,15 +43,15 @@ def retrieve_crew_amount(slug: str):
     return item_count
 
 
-def retrieve_events(contract_adress: str, token_id: int):
+def retrieve_events(contract_address: str, token_id: int):
     """
     Retries OpenSea evednts of a specified asset
-    :param contract_adress: ethereum address that the asset belongs to
+    :param contract_address: ethereum address that the asset belongs to
     :param token_id: id of asset to retrieve
     :return: asset events
     """
     stat_collection_request_url = f'https://api.opensea.io/api/v1/events?token_id={token_id}&' \
-                                  f'asset_contract_address={contract_adress}'
+                                  f'asset_contract_address={contract_address}'
     response = make_request(stat_collection_request_url)
     return response
 
@@ -74,4 +74,15 @@ def retrieve_all_assets(slug: str, item_count: int):
         iteration_counter += 1
     return item_list
 
+
+def get_single_asset(token_id, contract_address='0x746db7b1728af413c4e2b98216c6171b2fc9d00e'):
+    """
+    Retrieve a single asset from OS
+    :param token_id: id of asset to retrieve
+    :param contract_address: ethereum address that the asset belongs to
+    :return: asset as dict
+    """
+    url = f"https://api.opensea.io/api/v1/asset/{contract_address}/{token_id}"
+    asset = make_request(url)
+    return asset
 

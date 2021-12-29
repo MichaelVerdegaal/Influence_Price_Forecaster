@@ -15,7 +15,6 @@ traits of an item. It includes a data feed module, an ANN training module and an
 ### Requirements
 
 - Python 3.8+
-- Latest .json data export copied to root directory. You can find
 - [Poetry installation](https://python-poetry.org/docs/) for dependency management
 
 ### Dependencies
@@ -25,5 +24,8 @@ traits of an item. It includes a data feed module, an ANN training module and an
 ### Run 
 
 To run:
-- Prepare an OpenSea API key
-- Run `data_feed_script.py`
+- Prepare an OpenSea API key, and set it as the environment variable with name `OS_API_KEY`
+- Run `data_feed_script.py` to get a dataset
+- Optionally but recommended, run `data_augment_script.py` to augment an existing dataset with extra data
+- Run `train_model_script.py` to train a neural network model
+- Run `manual_prediction_script.py` to manually test a trained model. This will require some configuration

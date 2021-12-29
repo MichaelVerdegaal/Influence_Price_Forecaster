@@ -6,7 +6,7 @@ from dataset_building import get_and_clean_single_asset
 dtypes = unpickle_obj('dataset_influence-crew_dtypes')
 
 # Config
-prediction_number = 6999
+prediction_number = 7000
 traits_to_keep = ['Title', 'Class', 'Collection']  # Which trait types of the NFT to keep
 
 
@@ -14,8 +14,8 @@ traits_to_keep = ['Title', 'Class', 'Collection']  # Which trait types of the NF
 asset_to_predict = get_and_clean_single_asset(prediction_number, dtypes, to_keep=traits_to_keep)
 
 # Split dataset
-model = read_model("model_influence_crew_10368")
+model = read_model("model_influence_crew_10482")
 
 # Predict
-prediction = model.predict(asset_to_predict)
-print(f"Predicted price for crew member {prediction_number} is: [{prediction[0][0]}]")
+prediction = model.predict(asset_to_predict)[0][0]
+print(f"Predicted price for crew choice is: [{prediction}]")
