@@ -5,6 +5,7 @@ from tensorflow.keras.losses import mean_squared_error
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.constraints import NonNeg
+from tensorflow.python.keras.regularizers import l2
 
 from config import unpickle_obj, save_model
 from source.evaluation import plot_fit_curves
@@ -14,20 +15,23 @@ df = unpickle_obj('dataset_influence-crew_1781_augmented')
 dtypes = unpickle_obj('dataset_influence-crew_dtypes')
 labels = df.pop('sales.price')
 
-X_train, X_test, y_train, y_test = train_test_split(df, labels, random_state=5, train_size=0.8)
+X_train, X_test, y_train, y_test = train_test_split(df, labels, random_state=5, train_size=0.8, shuffle=True)
 
 # Compile model
 model = Sequential()
-model.add(Dense(500, activation='relu', kernel_constraint=NonNeg()))
+model.add(Dense(200,
+                activation='relu',
+                kernel_regularizer=l2(0.0001),
+                bias_regularizer=l2(0.0001)))
 model.add(Dense(1))
 
 model.compile(loss=mean_squared_error, optimizer=Adam(0.00001))
 
 # Train model
 hist = model.fit(X_train, y_train,
-                 batch_size=4,
-                 validation_split=0.2,
-                 epochs=350)
+                 batch_size=32,
+                 validation_split=0.1,
+                 epochs=1000)
 
 # Evaluate model
 plot_fit_curves(hist, remove_first=True)

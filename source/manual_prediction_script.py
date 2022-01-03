@@ -6,12 +6,13 @@ from dataset_building import get_and_clean_single_asset
 dtypes = unpickle_obj('dataset_influence-crew_dtypes')
 
 # Config
-prediction_number = 2284
+prediction_number = 1530
 traits_to_keep = ['Title', 'Class', 'Collection']  # Which trait types of the NFT to keep
 
 
 # Retrieve single asset
-asset_to_predict = get_and_clean_single_asset(prediction_number, dtypes, to_keep=traits_to_keep)
+asset_to_predict = get_and_clean_single_asset(prediction_number, dtypes, to_keep=traits_to_keep,
+                                              year=None, month=None, day=None)
 
 # Split dataset
 model = read_model("model_influence_crew_10686")
